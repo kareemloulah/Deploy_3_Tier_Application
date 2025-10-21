@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: deployment-go-app
+  name: deployment-go-app
+  namespace: goapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deployment-go-app
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: deployment-go-app
+    spec:
+      automountServiceAccountToken: false 
+      volumes:
+      - name: db-password
+        secret:
+          secretName: db-password
+      containers:
+      - image: loulah/go_app:v1
+        name: deployment-go-app
+        ports:
+            - containerPort: 8000
+        volumeMounts:
+        - name: db-password
+          mountPath: /run/secrets
+          readOnly: true
+        resources:
+          limits:
+            memory: 0.5Gi
+            cpu: 500m
+          requests:
+            memory: 0.5Gi
+            cpu: 200m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: service-go-app
+  name: service-go-app
+  namespace: goapp
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: deployment-go-app
+status:
+  loadBalancer: {}
