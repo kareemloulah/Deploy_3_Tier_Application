@@ -1,0 +1,29 @@
+services:
+  client:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - 443:443
+    networks:
+      - go-network
+  goapp:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    networks:
+      - go-network
+    
+  mysql:
+    image: mysql:9.4.0-oracle
+    env_file: 
+      - ./backend/db-password.txt
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - go-network
+
+networks:
+  go-network:
+volumes:
+  db-data:
