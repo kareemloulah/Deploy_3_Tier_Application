@@ -13,11 +13,18 @@ services:
       dockerfile: Dockerfile
     networks:
       - go-network
+    secrets:
+      - db-password
     
-  mysql:
+  db:
     image: mysql:9.4.0-oracle
-    env_file: 
-      - ./backend/db-password.txt
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db-password
+      MYSQL_DATABASE: example
+      MYSQL_USER: kareem
+      MYSQL_PASSWORD_FILE: /run/secrets/db-password
+    secrets:
+      - db-password
     volumes:
       - db-data:/var/lib/mysql
     networks:
@@ -27,3 +34,7 @@ networks:
   go-network:
 volumes:
   db-data:
+secrets:
+  db-password:
+    file: ./backend/db-password
+

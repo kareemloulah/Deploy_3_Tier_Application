@@ -34,7 +34,7 @@ sudo openssl req -x509 -nodes -days $DAYS_VALID -newkey rsa:2048 \
   -subj "/C=$COUNTRY/ST=$STATE/L=$CITY/O=$ORG/OU=$ORG_UNIT/CN=$DOMAIN"
 
 # Adjust permissions
-sudo chmod 600 "$KEY_FILE"
+sudo chmod 644 "$KEY_FILE"
 sudo chmod 644 "$CERT_FILE"
 
 echo "✅ SSL certificate generated successfully!"

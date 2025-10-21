@@ -8,8 +8,7 @@ COPY go.mod go.sum ./
 
 # Download dependencies
 RUN go mod download
-RUN mkdir -p ./run/secrets/
-COPY db-password /run/secrets/db-password
+
 # Copy the rest of the application source code
 COPY . .
 
