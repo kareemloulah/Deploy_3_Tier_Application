@@ -25,6 +25,7 @@ WORKDIR /root/
 # Copy the compiled binary from the builder stage
 COPY --from=builder /app/myapp .
 
+RUN apk add curl
 # Expose the port your application listens on (optional)
 EXPOSE 8000
 

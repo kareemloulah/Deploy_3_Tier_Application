@@ -6,13 +6,19 @@ services:
     ports:
       - 443:443
     networks:
-      - go-network
+      go-network:
+        ipv4_address: 192.168.150.10
+        aliases:
+          - lb
   goapp:
     build:
       context: ./backend
       dockerfile: Dockerfile
     networks:
-      - go-network
+      go-network:
+        ipv4_address: 192.168.151.10
+        aliases:
+          - goapp
     secrets:
       - db-password
     
@@ -27,10 +33,47 @@ services:
       - db-data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - go-network
+      go-network:
+        ipv4_address: 192.168.152.10
+        aliases:
+          - db
 
 networks:
   go-network:
+    driver: ipvlan
+    driver_opts:
+      parent: ens33
+      ipvlan_mode: l3
+      ipvlan_flag: bridge
+    ipam:
+      config:
+        - subnet: 192.168.150.0/24
+        - subnet: 192.168.151.0/24
+        - subnet: 192.168.152.0/24
+
+  # db-network:
+  #   driver: ipvlan
+  #   driver_opts:
+  #     parent: ens33
+  #     ipvlan_mode: l3
+  #     ipvlan_flag: bridge
+  #   ipam:
+  #     config:
+  #       - subnet: 192.168.100.0/24
+  #       - subnet: 192.168.101.0/24
+  #       - subnet: 192.168.102.0/24
+
+  # lb-network:
+  #   driver: ipvlan
+  #   driver_opts:
+  #     parent: ens33
+  #     ipvlan_mode: l3
+  #     ipvlan_flag: bridge
+  #   ipam:
+  #     config:
+  #       - subnet: 192.168.100.0/24
+  #       - subnet: 192.168.101.0/24
+  #       - subnet: 192.168.102.0/24
 volumes:
   db-data:
 secrets:
