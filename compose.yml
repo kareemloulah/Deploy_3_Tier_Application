@@ -40,6 +40,7 @@ services:
 
 networks:
   go-network:
+    # external: true  
     driver: ipvlan
     driver_opts:
       parent: ens33
