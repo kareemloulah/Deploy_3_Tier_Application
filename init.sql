@@ -1,2 +1,2 @@
-ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'SuperSecureP@ssw0rd';
+ALTER USER 'root'@'%' IDENTIFIED WITH caching_sha2_password BY 'SuperSecureP@ssw0rd';
 FLUSH PRIVILEGES;

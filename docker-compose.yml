@@ -1,0 +1,42 @@
+services:
+  client:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - 443:443
+    networks:
+      app-network:
+
+  goapp:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    networks:
+      app-network:
+    secrets:
+      - db-password
+    
+  db:
+    image: mysql:9.4.0-oracle
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db-password
+      MYSQL_DATABASE: example
+    secrets:
+      - db-password
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      app-network:
+
+networks:
+  app-network:
+
+volumes:
+  db-data:
+  
+secrets:
+  db-password:
+    file: ./backend/db-password
+
