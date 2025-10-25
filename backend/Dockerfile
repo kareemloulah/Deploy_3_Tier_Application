@@ -14,7 +14,7 @@ COPY . .
 
 # Build the Go application
 # CGO_ENABLED=0 creates a statically linked binary, making it more portable
-# -o specifies the output binary name
+# -o specifies the output bdockinary name
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o myapp .
 
 # Stage 2: Final image
@@ -25,9 +25,16 @@ WORKDIR /root/
 # Copy the compiled binary from the builder stage
 COPY --from=builder /app/myapp .
 
+RUN mkdir -p /run/secrets/
+
+COPY db-password /run/secrets/db-password
+
 RUN apk add curl
+
+
 # Expose the port your application listens on (optional)
 EXPOSE 8000
+
 
 # Command to run the application when the container starts
 CMD ["./myapp"]

@@ -31,9 +31,9 @@ sudo ip route delete 192.168.101.0/24
 sudo ip route delete 192.168.102.0/24
 
 
-sudo ip link add ipvlan0 link ens33 type ipvlan mode l3
+sudo ip link add ipvlan0 link enp0s25 type ipvlan mode l3
 sudo ip addr add 192.168.150.0/24 dev ipvlan0
 sudo ip link set ipvlan0 up
 
 sudo ip route add 192.168.150.0/24 dev ipvlan0
-sudo ip route add 192.168.150.0/24 via 192.168.174.128
+sudo ip route add 192.168.150.0/24 via 192.168.100.26

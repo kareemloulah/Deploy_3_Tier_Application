@@ -43,7 +43,7 @@ networks:
     # external: true  
     driver: ipvlan
     driver_opts:
-      parent: eth0
+      parent: wlp61s0
       ipvlan_mode: l3
       ipvlan_flag: bridge
     ipam:
