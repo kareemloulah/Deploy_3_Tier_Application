@@ -1,2 +1,3 @@
-ALTER USER 'root'@'%' IDENTIFIED WITH caching_sha2_password BY 'kareem';
+USE mysql;
+ALTER USER 'root'@'%' IDENTIFIED BY 'root1234';
 FLUSH PRIVILEGES;
