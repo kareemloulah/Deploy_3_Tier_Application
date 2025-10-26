@@ -308,10 +308,3 @@ If you want to run individual containers without Docker Compose, you'll need to:
 3. Mount volumes and secrets manually
 4. Configure port mappings
 
-### Network Configuration
-
-The `compose.sh` script contains advanced network configuration using **ipvlan L3 mode** for custom network isolation. This is optional and provides more control over network routing.
-
----
-
-**Last Updated:** October 2025
