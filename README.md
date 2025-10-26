@@ -77,6 +77,8 @@ COPY --from=builder /app/myapp .
 
 RUN apk add curl # FOR TESTING LATER
 
+# RUN mkdir -p /run/secrets/ # optional if running without compose 
+
 # Expose the port your application listens on
 EXPOSE 8000
 
@@ -117,4 +119,66 @@ CMD ["./myapp"]
     Note :  if you need to run without compose you have to do the same either on the run command or include in docker file >> port mapping for ports and COPY for the db-password
 
 ***Docker Compose up -d*** to run the compose file check files if facing errors 
+
+
+
 ### Kubernetes setup 
+
+I like to start in kubernetes from the smalest to largest : 
+    - starting with the namespace setup if needed.
+    - Pv > PVC.
+    - configmap and secrets.
+    - deployments > Services.
+
+#### NameSpace 
+```
+kubectl create namespace <name>
+```
+#### PV, PVC
+    has to be created in order 
+    pv : created globally in a cluster no name space needs specification 
+    pvc : created in a specific name space related to the deployment that needs it 
+[persistant Volume yaml](./k8s/pv-db.yml)
+[persistant Volume Claim yaml](./k8s/pvc-ns.yml)
+notes of the names of them pvc name is going to get mentioend in the Deployment yaml file.
+
+#### Config Map and Secrets  
+
+    the setup has 2 Config Maps needed > 1 for nginx and 1 for DB setup :
+    Nginx : 
+    ```
+    kubectl create configmap <"name"> --from-env-file=./<"path_to_config.txt"> <"args">  --dry-run=client -o yaml > <filename>.yaml
+    ```
+    1 secret for nginx for the tls 
+    ```
+    kubectl create secret tls --key=<Path_to_key> --cert=<path_to_Cert> --dry-run=client -o yaml > <filename>.yaml
+    [configmap-nginx.yaml](./k8s/deployment-nginx.yml) found in the section of config map 
+    DB :
+    [config map yaml](./k8s/configmap.yml)
+    [secret db password](./k8s/secret-db.yml)
+    
+#### deployment 
+we have 3 deployment ( nginx, go, DB):
+##### DB deployment / Service :
+```
+kubectl create deployment <deployment_name> \
+--image <Image/name:version> \
+--replicas <num_of_pods> \
+--port <container port> \
+-n <namespace> 
+--dry-run=client -o yaml > filename.yaml
+
+kubectl create svc clusterip <svc_name> \
+--tcp=svc_port:container_port \
+--dry-run=client -o yaml
+```
+[Deployment + service yaml](./k8s/deployment-db.yml)
+##### Go APP Deployment / service : 
+[Deployment + service yaml](./k8s/deployment-go.yml)
+##### nginx Deployment / service : 
+[Deployment + service yaml](./k8s/deployment-nginx.yml)
+
+### caveats 
+    - kubernetes deployment by default sets permissions for the /run/secrets dir ie. containers dont have read access to files in that dir 
+    >> to overright this settings add spec.automountServiceAccountToken: false. for both DB and go since both need access to this dir to get DB password 
+    - in the DB setup you need to enable root acces from any IP using the init.sql file check docs.
