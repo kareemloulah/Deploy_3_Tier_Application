@@ -35,22 +35,30 @@
 └── 📄 README.md
 ```
 
-## Task :
-    - Containarized application Setup 
-    - Compose file with volumes to persist sql data and network
-    - k8s deployment setup 
-### The Basics 
-####    Step 1: 
-    Containarizing the go app >
-    Notes to take from src code :
-    Q1) Listening on which port.
-    Q2) wants to connect to what and which port.
-    Q3) is any creds needed and where.
+## Task:
+- Containerized application setup
+- Compose file with volumes to persist SQL data and networking
+- Kubernetes deployment setup
 
-pretty simple app listens on port 8000, needs to see 'db' from dns connects on port 3306, credintials are read from a file called 'db-password' in '/run/secrets/' directory 
-```
+---
+
+## The Basics
+
+### Step 1: Containerizing the Go App
+
+**Notes to take from source code:**
+
+**Q1)** Listening on which port?  
+**Q2)** Wants to connect to what and which port?  
+**Q3)** Are any credentials needed and where?
+
+**Answer:** Pretty simple app that listens on port **8000**, needs to see **'db'** from DNS, connects on port **3306**, credentials are read from a file called **'db-password'** in the **'/run/secrets/'** directory.
+
+**Dockerfile (Multi-stage Build):**
+
+```dockerfile
 # Stage 1: Builder
-FROM golang:1.25.3-trixie AS builder
+FROM golang:1.23.3-trixie AS builder
 
 WORKDIR /app
 
@@ -77,7 +85,7 @@ COPY --from=builder /app/myapp .
 
 RUN apk add curl # FOR TESTING LATER
 
-# RUN mkdir -p /run/secrets/ # optional if running without compose 
+# RUN mkdir -p /run/secrets/ # optional if running without compose
 
 # Expose the port your application listens on
 EXPOSE 8000
@@ -85,100 +93,225 @@ EXPOSE 8000
 CMD ["./myapp"]
 ```
 
-#### Step 2:
-    Containarizing Nginx >
-    what is needed is configuration for the reverse proxy listen on port 80 "http" or 443 "https" NEEDS SSL
-    configuring nginx is pretty straight forward add server block that forwards traffic comming on port 443 to the go app :
-```
- server {
-        listen 443 ssl;
-        server_name localhost;
+---
 
-        ssl_certificate /etc/nginx/certs/localhost.crt; 
-        ssl_certificate_key /etc/nginx/certs/localhost.key; 
+### Step 2: Containerizing Nginx
 
+What is needed is configuration for the reverse proxy. Listen on port **80** "http" or **443** "https" **NEEDS SSL**.
 
-        ssl_session_cache    shared:SSL:1m;  # optional 
-        ssl_session_timeout  5m;  # optional
-        location / {
-            proxy_pass http://goapp:8000; # your backend API
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-        }
+Configuring Nginx is pretty straightforward - add a server block that forwards traffic coming on port 443 to the Go app:
+
+**nginx.conf:**
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name localhost;
+
+    ssl_certificate /etc/nginx/certs/localhost.crt; 
+    ssl_certificate_key /etc/nginx/certs/localhost.key; 
+
+    ssl_session_cache shared:SSL:1m;  # optional 
+    ssl_session_timeout 5m;  # optional
+    
+    location / {
+        proxy_pass http://goapp:8000; # your backend API
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
+}
 ```
-#### Step3 
-    Create a compose file that has 3 services Nginx, go, db. 
-    Note 1 : Database name has to match the name in the go src code. 
-    Note 2 : mounting volume for mysql data # refrence DB docs to get dir. 
-    Note 3 : mount db-password as env-from file to set db password.
-    Note 4 : mount db-password in go app in needed dir as the src code. 
 
-[Docker-compose.yml](docker-compose.yml)
+---
 
-    Note :  if you need to run without compose you have to do the same either on the run command or include in docker file >> port mapping for ports and COPY for the db-password
+### Step 3: Create a Compose File
 
-***Docker Compose up -d*** to run the compose file check files if facing errors 
+Create a compose file that has 3 services: **Nginx**, **Go**, **DB**.
 
+**Important Notes:**
 
+- **Note 1:** Database name has to match the name in the Go source code
+- **Note 2:** Mounting volume for MySQL data (reference DB docs to get directory)
+- **Note 3:** Mount db-password as env-from file to set DB password
+- **Note 4:** Mount db-password in Go app in the needed directory as specified in the source code
 
-### Kubernetes setup 
+**Compose File:** [docker-compose.yml](docker-compose.yml)
 
-I like to start in kubernetes from the smalest to largest : 
-    - starting with the namespace setup if needed.
-    - Pv > PVC.
-    - configmap and secrets.
-    - deployments > Services.
+**Note:** If you need to run without compose, you have to do the same either on the run command or include in the Dockerfile >> port mapping for ports and COPY for the db-password.
 
-#### NameSpace 
+**Run the compose file:**
+
+```bash
+docker-compose up -d
 ```
+
+Check files if facing errors.
+
+---
+
+## Kubernetes Setup
+
+I like to start in Kubernetes from the smallest to largest:
+
+1. Starting with the **namespace** setup if needed
+2. **PV** > **PVC**
+3. **ConfigMap** and **Secrets**
+4. **Deployments** > **Services**
+
+---
+
+### Namespace
+
+```bash
 kubectl create namespace <name>
 ```
-#### PV, PVC
-    has to be created in order 
-    pv : created globally in a cluster no name space needs specification 
-    pvc : created in a specific name space related to the deployment that needs it 
-[persistant Volume yaml](./k8s/pv-db.yml)
-[persistant Volume Claim yaml](./k8s/pvc-ns.yml)
-notes of the names of them pvc name is going to get mentioend in the Deployment yaml file.
 
-#### Config Map and Secrets  
+---
 
-    the setup has 2 Config Maps needed > 1 for nginx and 1 for DB setup :
-    Nginx : 
-    ```
-    kubectl create configmap <"name"> --from-env-file=./<"path_to_config.txt"> <"args">  --dry-run=client -o yaml > <filename>.yaml
-    ```
-    1 secret for nginx for the tls 
-    ```
-    kubectl create secret tls --key=<Path_to_key> --cert=<path_to_Cert> --dry-run=client -o yaml > <filename>.yaml
-    [configmap-nginx.yaml](./k8s/deployment-nginx.yml) found in the section of config map 
-    DB :
-    [config map yaml](./k8s/configmap.yml)
-    [secret db password](./k8s/secret-db.yml)
-    
-#### deployment 
-we have 3 deployment ( nginx, go, DB):
-##### DB deployment / Service :
+### PV, PVC
+
+Has to be created in order:
+
+- **PV:** Created globally in a cluster, no namespace needs specification
+- **PVC:** Created in a specific namespace related to the deployment that needs it
+
+**Files:**
+- [Persistent Volume yaml](./k8s/pv-db.yml)
+- [Persistent Volume Claim yaml](./k8s/pvc-ns.yml)
+
+**Note:** Take note of the names - the PVC name is going to get mentioned in the Deployment yaml file.
+
+---
+
+### ConfigMap and Secrets
+
+The setup has 2 ConfigMaps needed:
+
+**1. For Nginx:**
+
+```bash
+kubectl create configmap <"name"> --from-env-file=./<"path_to_config.txt"> <"args"> --dry-run=client -o yaml > <filename>.yaml
 ```
+
+**1 Secret for Nginx TLS:**
+
+```bash
+kubectl create secret tls <secret-name> --key=<Path_to_key> --cert=<path_to_Cert> --dry-run=client -o yaml > <filename>.yaml
+```
+
+[ConfigMap Nginx yaml](./k8s/deployment-nginx.yml) - found in the section of ConfigMap
+
+**2. For DB:**
+
+- [ConfigMap yaml](./k8s/configmap.yml)
+- [Secret DB password](./k8s/secret.yml)
+
+---
+
+### Deployments
+
+We have 3 deployments: **Nginx**, **Go**, **DB**
+
+#### DB Deployment / Service:
+
+```bash
 kubectl create deployment <deployment_name> \
 --image <Image/name:version> \
 --replicas <num_of_pods> \
---port <container port> \
--n <namespace> 
+--port <container_port> \
+-n <namespace> \
 --dry-run=client -o yaml > filename.yaml
 
 kubectl create svc clusterip <svc_name> \
 --tcp=svc_port:container_port \
 --dry-run=client -o yaml
 ```
-[Deployment + service yaml](./k8s/deployment-db.yml)
-##### Go APP Deployment / service : 
-[Deployment + service yaml](./k8s/deployment-go.yml)
-##### nginx Deployment / service : 
-[Deployment + service yaml](./k8s/deployment-nginx.yml)
 
-### caveats 
-    - kubernetes deployment by default sets permissions for the /run/secrets dir ie. containers dont have read access to files in that dir 
-    >> to overright this settings add spec.automountServiceAccountToken: false. for both DB and go since both need access to this dir to get DB password 
-    - in the DB setup you need to enable root acces from any IP using the init.sql file check docs.
+**File:** [Deployment + Service yaml](./k8s/deployment-db.yml)
+
+---
+
+#### Go App Deployment / Service:
+
+**File:** [Deployment + Service yaml](./k8s/deployment-go.yml)
+
+---
+
+#### Nginx Deployment / Service:
+
+**File:** [Deployment + Service yaml](./k8s/deployment-nginx.yml)
+
+---
+
+## Caveats
+
+- **Kubernetes Secret Permissions:** Kubernetes deployment by default sets permissions for the `/run/secrets` directory, i.e., containers don't have read access to files in that directory.
+  
+  **Solution:** To overwrite these settings, add `spec.automountServiceAccountToken: false` for both DB and Go deployments since both need access to this directory to get the DB password.
+
+- **DB Root Access:** In the DB setup, you need to enable root access from any IP using the `init.sql` file. Check the MySQL documentation for details.
+
+---
+
+## Quick Commands Reference
+
+### Docker Compose
+
+```bash
+# Start all services
+docker-compose up -d
+
+# Stop all services
+docker-compose down
+
+# View logs
+docker-compose logs -f
+
+# Check running services
+docker-compose ps
+```
+
+### Kubernetes
+
+```bash
+# Create namespace
+kubectl create namespace app-ns
+
+# Apply all resources
+kubectl apply -f k8s/
+
+# Check pods
+kubectl get pods -n app-ns
+
+# Check services
+kubectl get svc -n app-ns
+
+# View logs
+kubectl logs -f <pod-name> -n app-ns
+
+# Delete all resources
+kubectl delete namespace app-ns
+```
+
+---
+
+## Additional Notes
+
+### Running Without Compose
+
+If you want to run individual containers without Docker Compose, you'll need to:
+
+1. Create a network manually
+2. Run each container with proper network configuration
+3. Mount volumes and secrets manually
+4. Configure port mappings
+
+### Network Configuration
+
+The `compose.sh` script contains advanced network configuration using **ipvlan L3 mode** for custom network isolation. This is optional and provides more control over network routing.
+
+---
+
+**Last Updated:** October 2025
