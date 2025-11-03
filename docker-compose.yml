@@ -9,9 +9,7 @@ services:
       app-network:
 
   goapp:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: loulah/go_app:v2
     networks:
       app-network:
     secrets:
