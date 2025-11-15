@@ -6,7 +6,7 @@ pipeline {
 apiVersion: v1
 kind: Pod
 spec:
-  serviceAccountName: jenkins-deployer-sa
+  serviceAccountName: jenkins-admin
   containers:
     - name: docker
       image: docker:25-dind
