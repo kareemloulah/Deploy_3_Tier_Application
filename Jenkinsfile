@@ -5,6 +5,9 @@ pipeline {
       yaml """
 apiVersion: v1
 kind: Pod
+metadata:
+    labels:
+        app: docker-helm
 spec:
   containers:
     - name: docker
@@ -16,11 +19,9 @@ spec:
           mountPath: /var/lib/docker
     - name: helm
       image: alpine/helm:3
-      command: [cat]
       tty: true
     - name: kubectl
       image: bitnami/kubectl:latest
-      command: [cat]
       tty: true
   volumes:
     - name: docker-graph-storage
