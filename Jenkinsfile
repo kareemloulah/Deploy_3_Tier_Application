@@ -64,32 +64,13 @@ spec:
         }
         stage('Notification') {
             steps {
-                echo "Sending success email..."
-                mail to: 'loulahkareem@gmail.com',
-                subject: "SUCCESS: Build #${env.BUILD_NUMBER} (${env.JOB_NAME})",
-                body: """\
-                Build successful.
-                Project: ${env.JOB_NAME}
-                Build URL: ${env.BUILD_URL}
-                """
+                sh " send email for SUCCESS"
             }
         }
     }
     post {
         failure {
-            mail to: 'loulahkareem@gmail.com',
-            subject: "FAILED: Build #${env.BUILD_NUMBER} (${env.JOB_NAME})",
-            body: """\
-                   Build FAILED.
-                   Project: ${env.JOB_NAME}
-                   Build URL: ${env.BUILD_URL}
-                   Check logs for details.
-                   """
-            container('helm') {
-                sh """
-              helm rollback my-app
-            """
+            sh "SEND EMAIL FOR FAILURE"
             }
         }
-    }
 }
