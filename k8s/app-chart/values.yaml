@@ -1,0 +1,14 @@
+replicasCount:
+  nginx: 1
+  go: 1
+  db: 1 
+images:
+  db:
+    name: mysql
+    tag: 9.4.0-oracle
+  go:
+    name: loulah/go_app
+    tag: ""
+  nginx:
+    name: nginx
+    tag: 1.29.3

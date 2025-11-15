@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: deployment-go-app
+  name: {{ .Release.Name }}-go-app
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.replicasCount.go }}
+  selector:
+    matchLabels:
+      app: deployment-go-app
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: deployment-go-app
+    spec:
+      automountServiceAccountToken: false 
+      volumes:
+      - name: db-password
+        secret:
+          secretName: db-password
+      containers:
+      - image: {{ .Values.images.go.name }}:{{ .Values.images.go.tag }}
+        name: deployment-go-app
+        ports:
+            - containerPort: 8000
+        volumeMounts:
+        - name: db-password
+          mountPath: /run/secrets
+          readOnly: true
+        resources:
+          limits:
+            memory: 0.5Gi
+            cpu: 500m
+          requests:
+            memory: 0.5Gi
+            cpu: 200m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: service-go-app
+  name: {{ .Release.Name }}-go-app-svc
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: deployment-go-app
+status:
+  loadBalancer: {}
