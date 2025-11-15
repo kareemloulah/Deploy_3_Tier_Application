@@ -19,10 +19,6 @@ spec:
       image: alpine/helm:3
       command: [cat]
       tty: true
-    - name: curl
-      image: alpine/curl:8.14.1
-      command: [cat]
-      tty: true
   volumes:
     - name: docker-graph-storage
       emptyDir: {}
