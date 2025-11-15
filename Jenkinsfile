@@ -15,7 +15,7 @@ spec:
         - name: docker-graph-storage
           mountPath: /var/lib/docker
     - name: helm
-      image: lachlanevenson/k8s-helm:v3.14.3
+      image: alpine/helm:3
       command: [cat]
       tty: true
     - name: kubectl
