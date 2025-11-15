@@ -55,14 +55,15 @@ spec:
               --create-namespace --wait
           """
         }
-        // If custom kubectl usage needed (e.g., pre-deployment logic or checks):
-        container('busybox') {
+      }
+    }
+    stage('Smoke Test'){
+      steps{
           sh """
             echo "SMOKE TEST START"
             curl -k https://proxy.${HELM_NAMESPACE}.svc.cluster.local
             echo "SMOKE TEST PASSED"
           """
-        }
       }
     }
   }
