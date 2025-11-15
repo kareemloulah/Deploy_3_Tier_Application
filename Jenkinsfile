@@ -57,7 +57,7 @@ spec:
       steps{
           sh """
             echo "SMOKE TEST START"
-            curl -k https://proxy.${HELM_NAMESPACE}.svc.cluster.local
+            curl -k https://nginx-svc.${HELM_NAMESPACE}.svc.cluster.local
             echo "SMOKE TEST PASSED"
           """
       }
