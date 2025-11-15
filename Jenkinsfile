@@ -62,15 +62,5 @@ spec:
           """
             }
         }
-        stage('Notification') {
-            steps {
-                sh " send email for SUCCESS"
-            }
-        }
     }
-    post {
-        failure {
-            sh "SEND EMAIL FOR FAILURE"
-            }
-        }
 }
