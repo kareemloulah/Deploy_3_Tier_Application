@@ -19,8 +19,8 @@ spec:
       image: alpine/helm:3
       command: [cat]
       tty: true
-    - name: kubectl
-      image: bitnami/kubectl:latest
+    - name: busybox
+      image: busybox:stable
       command: [cat]
       tty: true
   volumes:
@@ -56,8 +56,11 @@ spec:
           """
         }
         // If custom kubectl usage needed (e.g., pre-deployment logic or checks):
-        container('kubectl') {
-          sh "kubectl get pods -n $HELM_NAMESPACE"
+        container('busybox') {
+          sh """
+            echo "SMOKE TEST START"
+            curl -k https://proxy.${HELM_NAMESPACE}.svc.cluster.local
+          """
         }
       }
     }

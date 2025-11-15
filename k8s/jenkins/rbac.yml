@@ -4,6 +4,9 @@ kind: ClusterRole
 metadata:
   name: jenkins-admin
 rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["*"]
   - apiGroups: ["apps"]
     resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
