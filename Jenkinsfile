@@ -19,8 +19,8 @@ spec:
       image: alpine/helm:3
       command: [cat]
       tty: true
-    - name: busybox
-      image: busybox:stable
+    - name: curl
+      image: alpine/curl:8.14.1
       command: [cat]
       tty: true
   volumes:
@@ -60,6 +60,7 @@ spec:
           sh """
             echo "SMOKE TEST START"
             curl -k https://proxy.${HELM_NAMESPACE}.svc.cluster.local
+            echo "SMOKE TEST PASSED"
           """
         }
       }
