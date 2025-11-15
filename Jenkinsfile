@@ -51,7 +51,8 @@ spec:
           sh """
             helm upgrade --install my-app ./k8s/app-chart/ \\
               --set images.go.tag=${BUILD_NUMBER} \\
-              --namespace $HELM_NAMESPACE
+              --namespace $HELM_NAMESPACE \\
+              --create-namespace --wait
           """
         }
         // If custom kubectl usage needed (e.g., pre-deployment logic or checks):
