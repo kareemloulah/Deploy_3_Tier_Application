@@ -34,7 +34,7 @@ spec:
             steps {
                 container('docker') {
                     sh "docker build -t ${DOCKER_IMAGE} -f ./backend/Dockerfile ./backend"
-                    sh "docker tag loulah/go_app:latest ${DOCKER_IAMGE}"
+                    sh "docker tag ${DOCKER_IAMGE} loulah/go_app:latest"
                     withCredentials([usernamePassword(credentialsId: 'dockerlogin', passwordVariable: 'docker_pass', usernameVariable: 'docker_user')]) {
                         sh "echo ${docker_pass} | docker login -u ${docker_user} --password-stdin docker.io"
                         sh "docker push ${DOCKER_IMAGE}"
