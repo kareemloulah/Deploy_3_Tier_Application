@@ -12,3 +12,4 @@ images:
   nginx:
     name: nginx
     tag: 1.29.3
+    

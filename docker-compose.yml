@@ -9,7 +9,7 @@ services:
       app-network:
 
   goapp:
-    image: loulah/go_app:v2
+    image: loulah/go_app:latest
     networks:
       app-network:
     secrets:
