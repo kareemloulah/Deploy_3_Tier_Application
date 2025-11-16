@@ -40,6 +40,7 @@ spec:
                         sh "docker compose up -d --build"
                     }
                 }
+                sh "curl -k https://localhost"
             }
             post {
                 failure {
@@ -49,7 +50,6 @@ spec:
                 }
                 always {
                     container('docker') {
-                        sh "curl -k https://localhost"
                         sh "docker compose down"
                     }
                 }
