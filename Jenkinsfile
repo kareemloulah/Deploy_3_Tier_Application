@@ -56,7 +56,7 @@ spec:
                 container('docker') {
                     sh """
                     echo "Starting local smoke test..."
-
+                    apk add --no-cache curl
                     docker compose up -d
 
                     echo "Waiting for container to come up..."
