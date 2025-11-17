@@ -63,7 +63,7 @@ spec:
                     sleep 10
 
                     # HEALTH CHECK
-                    curl -f http://localhost:8080/ || (echo "Smoke test failed!" && exit 1)
+                    curl -k https://localhost || (echo "Smoke test failed!" && exit 1)
 
                     echo "Smoke test passed!"
                     """
