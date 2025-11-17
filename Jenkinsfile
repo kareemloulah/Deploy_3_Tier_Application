@@ -60,7 +60,7 @@ spec:
                     docker compose up -d
 
                     echo "Waiting for container to come up..."
-                    sleep 10
+                    sleep 100
 
                     # HEALTH CHECK
                     curl -k https://localhost || (echo "Smoke test failed!" && exit 1)
