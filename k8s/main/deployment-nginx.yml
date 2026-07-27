@@ -50,12 +50,13 @@ metadata:
 data:
   default.conf: |
     server {
-            listen 443 ssl;
+            # listen 443 ssl;
+            # server_name localhost;
+
+            # ssl_certificate /etc/nginx/certs/tls.crt;
+            # ssl_certificate_key /etc/nginx/certs/tls.key;
+            listen 80 ;
             server_name localhost;
-
-            ssl_certificate /etc/nginx/certs/tls.crt;
-            ssl_certificate_key /etc/nginx/certs/tls.key;
-
 
             ssl_session_cache    shared:SSL:1m;
             ssl_session_timeout  5m;
