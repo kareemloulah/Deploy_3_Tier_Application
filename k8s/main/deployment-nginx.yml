@@ -80,5 +80,6 @@ spec:
   ports:
     - name: https-proxy
       protocol: TCP
-      port: 443
-      targetPort: 443
+      port: 80
+      targetPort: 80
+      nodePort: 32143 
